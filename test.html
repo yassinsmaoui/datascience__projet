@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Visualisations</title>
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #pie-svg, #bar-svg { border: 1px solid #ccc; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Test des Visualisations</h1>
+    
+    <h2>Pie Chart</h2>
+    <svg id="pie-svg" width="400" height="400"></svg>
+    
+    <h2>Bar Chart</h2>
+    <svg id="bar-svg" width="600" height="400"></svg>
+    
+    <script>
+        console.log('Test démarré...');
+        
+        // Test Pie Chart
+        const pieData = [
+            { label: 'Urbain', value: 15.2 },
+            { label: 'Rural', value: 8.3 }
+        ];
+        
+        const pieSvg = d3.select('#pie-svg');
+        const width = 400;
+        const height = 400;
+        const radius = Math.min(width, height) / 2 - 40;
+        
+        const g = pieSvg.append('g')
+            .attr('transform', `translate(${width / 2}, ${height / 2})`);
+        
+        const color = d3.scaleOrdinal()
+            .domain(['Urbain', 'Rural'])
+            .range(['#3498db', '#27ae60']);
+        
+        const pie = d3.pie()
+            .value(d => d.value)
+            .sort(null);
+        
+        const arc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(radius);
+        
+        const arcs = g.selectAll('.arc')
+            .data(pie(pieData))
+            .enter()
+            .append('g')
+            .attr('class', 'arc');
+        
+        arcs.append('path')
+            .attr('d', arc)
+            .attr('fill', d => color(d.data.label));
+        
+        arcs.append('text')
+            .attr('transform', d => `translate(${arc.centroid(d)})`)
+            .attr('text-anchor', 'middle')
+            .style('fill', 'white')
+            .style('font-weight', 'bold')
+            .text(d => d.data.label + ': ' + d.data.value + '%');
+        
+        console.log('Pie chart créé!');
+        
+        // Test Bar Chart
+        const barData = [
+            { year: '2015', value: 12.5 },
+            { year: '2016', value: 12.2 },
+            { year: '2017', value: 13.1 },
+            { year: '2018', value: 13.5 },
+            { year: '2019', value: 14.0 },
+            { year: '2020', value: 15.2 },
+            { year: '2021', value: 14.8 },
+            { year: '2022', value: 14.5 },
+            { year: '2023', value: 15.0 }
+        ];
+        
+        const barSvg = d3.select('#bar-svg');
+        const barWidth = 600;
+        const barHeight = 400;
+        const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+        const innerWidth = barWidth - margin.left - margin.right;
+        const innerHeight = barHeight - margin.top - margin.bottom;
+        
+        const barG = barSvg.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`);
+        
+        const x = d3.scaleBand()
+            .domain(barData.map(d => d.year))
+            .range([0, innerWidth])
+            .padding(0.2);
+        
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(barData, d => d.value) * 1.1])
+            .range([innerHeight, 0]);
+        
+        const colorBar = d3.scaleSequential()
+            .domain([0, barData.length - 1])
+            .interpolator(d3.interpolateRgb('#667eea', '#764ba2'));
+        
+        const xAxis = d3.axisBottom(x);
+        const yAxis = d3.axisLeft(y);
+        
+        barG.append('g')
+            .attr('transform', `translate(0, ${innerHeight})`)
+            .call(xAxis);
+        
+        barG.append('g')
+            .call(yAxis);
+        
+        barG.selectAll('.bar')
+            .data(barData)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar')
+            .attr('x', d => x(d.year))
+            .attr('width', x.bandwidth())
+            .attr('y', d => y(d.value))
+            .attr('height', d => innerHeight - y(d.value))
+            .attr('fill', (d, i) => colorBar(i));
+        
+        console.log('Bar chart créé!');
+    </script>
+</body>
+</html>

@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Chômage Maroc - Version Simple</title>
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            background: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 90px);
+            max-width: 1900px;
+            margin: 0 auto;
+        }
+        .viz-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .viz-box:hover {
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            transform: translateY(-4px);
+        }
+        .map-box {
+            grid-row: 1 / 3;
+            grid-column: 1;
+        }
+        .pie-box {
+            grid-row: 1;
+            grid-column: 2;
+        }
+        .bar-box {
+            grid-row: 2;
+            grid-column: 2;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 17px;
+            margin-bottom: 8px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 6px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .info {
+            text-align: center;
+            padding: 8px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #495057;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        .info strong {
+            color: #667eea;
+        }
+        svg { display: block; margin: 0 auto; }
+        .region {
+            stroke: white;
+            stroke-width: 1.5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .region:hover {
+            stroke: #2c3e50;
+            stroke-width: 3;
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(102, 126, 234, 0.6));
+        }
+        .region.active {
+            stroke: #e74c3c;
+            stroke-width: 3;
+            filter: brightness(1.1);
+        }
+        
+        /* Légende */
+        .legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .legend-gradient {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .gradient-bar {
+            width: 200px;
+            height: 15px;
+            border-radius: 8px;
+            background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
+            border: 1px solid #ddd;
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 200px;
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .viz-box {
+            animation: fadeIn 0.6s ease-out;
+        }
+        .map-box { animation-delay: 0.1s; }
+        .pie-box { animation-delay: 0.2s; }
+        .bar-box { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Analyse du Taux de Chômage par Région au Maroc</h1>
+        <div class="subtitle">Données 2023 - Survolez une région pour voir les détails</div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Carte -->
+        <div class="viz-box map-box">
+            <h2>🗺️ Carte Choroplèthe du Maroc</h2>
+            <div id="map-info" class="info">Survolez une région pour voir les statistiques</div>
+            <div id="map-chart" style="flex: 1; overflow: hidden;"></div>
+            <div class="legend">
+                <div>
+                    <div class="gradient-bar"></div>
+                    <div class="legend-labels">
+                        <span>Faible (0%)</span>
+                        <span>Moyen (10%)</span>
+                        <span>Élevé (20%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme circulaire -->
+        <div class="viz-box pie-box">
+            <h2>📊 Urbain vs Rural</h2>
+            <div id="pie-info" class="info">Survolez une région</div>
+            <div id="pie-chart" style="flex: 1; overflow: hidden;"></div>
+        </div>
+
+        <!-- Histogramme -->
+        <div class="viz-box bar-box">
+            <h2>📈 Évolution 2015-2023</h2>
+            <div id="bar-info" class="info">Survolez une région</div>
+            <div id="bar-chart" style="flex: 1; overflow: hidden;"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Démarrage de l\'application...');
+
+        // Données complètes pour TOUTES les régions du Maroc
+        const testData = {
+            // DONNÉES RÉELLES (CSV)
+            'Tanger-Tetouan-Al Hoceima': {
+                name: 'Tanger-Tétouan-Al Hoceïma',
+                urbain: 14.1,
+                rural: 4.2,
+                evolution: [
+                    {year: '2015', value: 16.3},
+                    {year: '2016', value: 14.2},
+                    {year: '2017', value: 11.5},
+                    {year: '2018', value: 10.6},
+                    {year: '2019', value: 11.9},
+                    {year: '2020', value: 14.1},
+                    {year: '2021', value: 15.5},
+                    {year: '2022', value: 14.1},
+                    {year: '2023', value: 14.1}
+                ]
+            },
+            'Oriental': {
+                name: 'Oriental',
+                urbain: 4.2,
+                rural: 15.2,
+                evolution: [
+                    {year: '2015', value: 4.4},
+                    {year: '2016', value: 4.1},
+                    {year: '2017', value: 3.9},
+                    {year: '2018', value: 3.6},
+                    {year: '2019', value: 3.6},
+                    {year: '2020', value: 4.7},
+                    {year: '2021', value: 3.2},
+                    {year: '2022', value: 3.4},
+                    {year: '2023', value: 4.2}
+                ]
+            },
+            // DONNÉES SYNTHÉTIQUES (Régions sans données dans le CSV)
+            'Fes-Meknes': {
+                name: 'Fès-Meknès',
+                urbain: 15.2,
+                rural: 8.3,
+                evolution: [
+                    {year: '2015', value: 11.3},
+                    {year: '2016', value: 11.6},
+                    {year: '2017', value: 12.2},
+                    {year: '2018', value: 12.5},
+                    {year: '2019', value: 12.8},
+                    {year: '2020', value: 14.2},
+                    {year: '2021', value: 13.9},
+                    {year: '2022', value: 13.5},
+                    {year: '2023', value: 13.8}
+                ]
+            },
+            'Rabat-Sale-Kenitra': {
+                name: 'Rabat-Salé-Kénitra',
+                urbain: 17.5,
+                rural: 9.1,
+                evolution: [
+                    {year: '2015', value: 13.5},
+                    {year: '2016', value: 13.8},
+                    {year: '2017', value: 14.2},
+                    {year: '2018', value: 14.8},
+                    {year: '2019', value: 15.1},
+                    {year: '2020', value: 16.5},
+                    {year: '2021', value: 16.2},
+                    {year: '2022', value: 15.8},
+                    {year: '2023', value: 16.1}
+                ]
+            },
+            'Beni Mellal-Khenifra': {
+                name: 'Béni Mellal-Khénifra',
+                urbain: 11.8,
+                rural: 6.5,
+                evolution: [
+                    {year: '2015', value: 8.5},
+                    {year: '2016', value: 8.7},
+                    {year: '2017', value: 9.0},
+                    {year: '2018', value: 9.2},
+                    {year: '2019', value: 9.5},
+                    {year: '2020', value: 10.8},
+                    {year: '2021', value: 10.5},
+                    {year: '2022', value: 10.2},
+                    {year: '2023', value: 10.6}
+                ]
+            },
+            'Casablanca-Settat': {
+                name: 'Casablanca-Settat',
+                urbain: 18.9,
+                rural: 10.2,
+                evolution: [
+                    {year: '2015', value: 15.2},
+                    {year: '2016', value: 15.5},
+                    {year: '2017', value: 16.0},
+                    {year: '2018', value: 16.5},
+                    {year: '2019', value: 17.0},
+                    {year: '2020', value: 18.5},
+                    {year: '2021', value: 18.2},
+                    {year: '2022', value: 17.8},
+                    {year: '2023', value: 18.3}
+                ]
+            },
+            'Marrakech-Safi': {
+                name: 'Marrakech-Safi',
+                urbain: 14.6,
+                rural: 7.8,
+                evolution: [
+                    {year: '2015', value: 10.5},
+                    {year: '2016', value: 10.7},
+                    {year: '2017', value: 11.0},
+                    {year: '2018', value: 11.3},
+                    {year: '2019', value: 11.6},
+                    {year: '2020', value: 13.0},
+                    {year: '2021', value: 12.7},
+                    {year: '2022', value: 12.4},
+                    {year: '2023', value: 12.8}
+                ]
+            },
+            'Draa-Tafilalet': {
+                name: 'Drâa-Tafilalet',
+                urbain: 10.9,
+                rural: 6.2,
+                evolution: [
+                    {year: '2015', value: 7.8},
+                    {year: '2016', value: 8.0},
+                    {year: '2017', value: 8.3},
+                    {year: '2018', value: 8.7},
+                    {year: '2019', value: 9.0},
+                    {year: '2020', value: 10.2},
+                    {year: '2021', value: 9.9},
+                    {year: '2022', value: 9.5},
+                    {year: '2023', value: 9.8}
+                ]
+            },
+            'Souss-Massa': {
+                name: 'Souss-Massa',
+                urbain: 13.2,
+                rural: 7.1,
+                evolution: [
+                    {year: '2015', value: 9.8},
+                    {year: '2016', value: 10.0},
+                    {year: '2017', value: 10.3},
+                    {year: '2018', value: 10.5},
+                    {year: '2019', value: 10.8},
+                    {year: '2020', value: 12.0},
+                    {year: '2021', value: 11.7},
+                    {year: '2022', value: 11.4},
+                    {year: '2023', value: 11.8}
+                ]
+            },
+            'Guelmim-Oued Noun': {
+                name: 'Guelmim-Oued Noun',
+                urbain: 19.2,
+                rural: 11.5,
+                evolution: [
+                    {year: '2015', value: 14.5},
+                    {year: '2016', value: 14.8},
+                    {year: '2017', value: 15.2},
+                    {year: '2018', value: 15.8},
+                    {year: '2019', value: 16.2},
+                    {year: '2020', value: 17.8},
+                    {year: '2021', value: 17.5},
+                    {year: '2022', value: 17.0},
+                    {year: '2023', value: 17.6}
+                ]
+            },
+            'Laayoune-Sakia El Hamra': {
+                name: 'Laâyoune-Sakia El Hamra',
+                urbain: 18.5,
+                rural: 10.8,
+                evolution: [
+                    {year: '2015', value: 14.0},
+                    {year: '2016', value: 14.3},
+                    {year: '2017', value: 14.8},
+                    {year: '2018', value: 15.5},
+                    {year: '2019', value: 16.0},
+                    {year: '2020', value: 17.2},
+                    {year: '2021', value: 16.8},
+                    {year: '2022', value: 16.5},
+                    {year: '2023', value: 17.0}
+                ]
+            },
+            'Dakhla-Oued Ed-Dahab': {
+                name: 'Dakhla-Oued Ed-Dahab',
+                urbain: 16.8,
+                rural: 9.5,
+                evolution: [
+                    {year: '2015', value: 12.5},
+                    {year: '2016', value: 12.8},
+                    {year: '2017', value: 13.2},
+                    {year: '2018', value: 13.8},
+                    {year: '2019', value: 14.2},
+                    {year: '2020', value: 15.5},
+                    {year: '2021', value: 15.2},
+                    {year: '2022', value: 14.8},
+                    {year: '2023', value: 15.3}
+                ]
+            }
+        };
+
+        // Fonction pour normaliser les noms
+        function normalizeRegionName(name) {
+            return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[-\s]/g, '');
+        }
+
+        // Trouver les données pour une région
+        function findRegionData(mapRegionName) {
+            const normalized = normalizeRegionName(mapRegionName);
+            
+            for (const [key, data] of Object.entries(testData)) {
+                const keyNormalized = normalizeRegionName(key);
+                if (normalized.includes(keyNormalized) || keyNormalized.includes(normalized)) {
+                    return data;
+                }
+            }
+            return null;
+        }
+
+        // Mettre à jour le pie chart
+        function updatePieChart(regionData) {
+            const container = d3.select('#pie-chart');
+            container.selectAll('*').remove();
+
+            if (!regionData) {
+                d3.select('#pie-info').text('Données non disponibles');
+                return;
+            }
+
+            d3.select('#pie-info').html(`<strong>${regionData.name}</strong> - 2023`);
+
+            const containerNode = container.node();
+            const width = containerNode.clientWidth;
+            const height = containerNode.clientHeight;
+            const radius = Math.min(width, height) / 2.8;
+
+            const data = [
+                { label: 'Urbain', value: regionData.urbain },
+                { label: 'Rural', value: regionData.rural }
+            ];
+
+            const svg = container.append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+            const color = d3.scaleOrdinal()
+                .domain(['Urbain', 'Rural'])
+                .range(['#3498db', '#27ae60']);
+
+            const pie = d3.pie().value(d => d.value).sort(null);
+            const arc = d3.arc().innerRadius(0).outerRadius(radius);
+            const arcHover = d3.arc().innerRadius(0).outerRadius(radius + 10);
+
+            const arcs = g.selectAll('.arc')
+                .data(pie(data))
+                .enter().append('g')
+                .attr('class', 'arc');
+
+            arcs.append('path')
+                .attr('d', arc)
+                .attr('fill', d => color(d.data.label))
+                .attr('stroke', 'white')
+                .attr('stroke-width', 3)
+                .style('opacity', 0)
+                .style('cursor', 'pointer')
+                .transition()
+                .duration(800)
+                .delay((d, i) => i * 200)
+                .style('opacity', 0.9)
+                .attrTween('d', function(d) {
+                    const interpolate = d3.interpolate({startAngle: 0, endAngle: 0}, d);
+                    return function(t) {
+                        return arc(interpolate(t));
+                    };
+                })
+                .selection()
+                .on('mouseover', function(d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('d', arcHover)
+                        .style('opacity', 1)
+                        .style('filter', 'drop-shadow(0 5px 10px rgba(0,0,0,0.3))');
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('d', arc)
+                        .style('opacity', 0.9)
+                        .style('filter', 'none');
+                });
+
+            arcs.append('text')
+                .attr('transform', d => `translate(${arc.centroid(d)})`)
+                .attr('text-anchor', 'middle')
+                .style('fill', 'white')
+                .style('font-weight', 'bold')
+                .style('font-size', '14px')
+                .style('text-shadow', '2px 2px 4px rgba(0,0,0,0.5)')
+                .style('opacity', 0)
+                .text(d => d.data.label)
+                .transition()
+                .duration(500)
+                .delay(1000)
+                .style('opacity', 1);
+
+            arcs.append('text')
+                .attr('transform', d => {
+                    const pos = arc.centroid(d);
+                    return `translate(${pos[0]}, ${pos[1] + 18})`;
+                })
+                .attr('text-anchor', 'middle')
+                .style('fill', 'white')
+                .style('font-weight', 'bold')
+                .style('font-size', '13px')
+                .style('text-shadow', '2px 2px 4px rgba(0,0,0,0.5)')
+                .style('opacity', 0)
+                .text(d => `${d.data.value}%`)
+                .transition()
+                .duration(500)
+                .delay(1000)
+                .style('opacity', 1);
+
+            console.log('✅ Pie chart créé pour', regionData.name);
+        }
+
+        // Mettre à jour le bar chart
+        function updateBarChart(regionData) {
+            const container = d3.select('#bar-chart');
+            container.selectAll('*').remove();
+
+            if (!regionData || !regionData.evolution) {
+                d3.select('#bar-info').text('Données non disponibles');
+                return;
+            }
+
+            d3.select('#bar-info').html(`<strong>${regionData.name}</strong> - Évolution`);
+
+            const containerNode = container.node();
+            const width = containerNode.clientWidth;
+            const height = containerNode.clientHeight;
+            const margin = { top: 10, right: 10, bottom: 50, left: 40 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+
+            const svg = container.append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+            const x = d3.scaleBand()
+                .domain(regionData.evolution.map(d => d.year))
+                .range([0, innerWidth])
+                .padding(0.2);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(regionData.evolution, d => d.value) * 1.1])
+                .range([innerHeight, 0]);
+
+            const colorBar = d3.scaleSequential()
+                .domain([0, regionData.evolution.length - 1])
+                .interpolator(d3.interpolateRgb('#667eea', '#764ba2'));
+
+            // Axes
+            g.append('g')
+                .attr('transform', `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end')
+                .style('font-size', '10px');
+
+            g.append('g')
+                .call(d3.axisLeft(y).ticks(5))
+                .selectAll('text')
+                .style('font-size', '10px');
+
+            // Barres avec animation
+            g.selectAll('.bar')
+                .data(regionData.evolution)
+                .enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.year))
+                .attr('width', x.bandwidth())
+                .attr('y', innerHeight)
+                .attr('height', 0)
+                .attr('fill', (d, i) => colorBar(i))
+                .style('cursor', 'pointer')
+                .style('opacity', 0.85)
+                .on('mouseover', function(d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .style('opacity', 1)
+                        .style('filter', 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))');
+                    
+                    // Tooltip
+                    g.append('text')
+                        .attr('class', 'tooltip-text')
+                        .attr('x', x(d.year) + x.bandwidth() / 2)
+                        .attr('y', y(d.value) - 10)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '12px')
+                        .style('font-weight', 'bold')
+                        .style('fill', '#e74c3c')
+                        .text(`${d.value.toFixed(1)}%`);
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .style('opacity', 0.85)
+                        .style('filter', 'none');
+                    
+                    g.selectAll('.tooltip-text').remove();
+                })
+                .transition()
+                .duration(800)
+                .delay((d, i) => i * 80)
+                .attr('y', d => y(d.value))
+                .attr('height', d => innerHeight - y(d.value));
+
+            // Ligne avec animation
+            const line = d3.line()
+                .x(d => x(d.year) + x.bandwidth() / 2)
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            const path = g.append('path')
+                .datum(regionData.evolution)
+                .attr('fill', 'none')
+                .attr('stroke', '#e74c3c')
+                .attr('stroke-width', 3)
+                .attr('d', line)
+                .style('stroke-dasharray', '5,5')
+                .style('filter', 'drop-shadow(0 2px 4px rgba(231,76,60,0.3))');
+
+            const totalLength = path.node().getTotalLength();
+            
+            path
+                .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+                .attr('stroke-dashoffset', totalLength)
+                .transition()
+                .duration(1500)
+                .delay(800)
+                .attr('stroke-dashoffset', 0);
+
+            // Points sur la ligne
+            g.selectAll('.point')
+                .data(regionData.evolution)
+                .enter().append('circle')
+                .attr('class', 'point')
+                .attr('cx', d => x(d.year) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.value))
+                .attr('r', 0)
+                .attr('fill', '#e74c3c')
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2)
+                .style('cursor', 'pointer')
+                .transition()
+                .duration(400)
+                .delay((d, i) => 800 + i * 80)
+                .attr('r', 4)
+                .selection()
+                .on('mouseover', function(d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .attr('r', 6);
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .attr('r', 4);
+                });
+
+            console.log('✅ Bar chart créé pour', regionData.name);
+        }
+
+        // Charger et afficher la carte
+        d3.json('https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json')
+            .then(data => {
+                console.log('✅ Carte chargée');
+
+                const container = d3.select('#map-chart');
+                const containerNode = container.node();
+                const width = containerNode.clientWidth;
+                const height = containerNode.clientHeight;
+
+                const svg = container.append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const regions = topojson.feature(data, data.objects.regions);
+                const projection = d3.geoMercator().fitSize([width, height], regions);
+                const pathGenerator = d3.geoPath().projection(projection);
+
+                // Échelle de couleurs
+                const colorScale = d3.scaleSequential()
+                    .domain([0, 20])
+                    .interpolator(d3.interpolateRgb('#2ecc71', '#e74c3c'));
+
+                svg.selectAll('path')
+                    .data(regions.features)
+                    .enter().append('path')
+                    .attr('class', 'region')
+                    .attr('d', pathGenerator)
+                    .attr('fill', d => {
+                        const regionName = d.properties.name || d.properties['name:ar'];
+                        const regionData = findRegionData(regionName);
+                        if (regionData) {
+                            const avgValue = (regionData.urbain + regionData.rural) / 2;
+                            return colorScale(avgValue);
+                        }
+                        return '#cccccc';
+                    })
+                    .style('opacity', 0)
+                    .transition()
+                    .duration(800)
+                    .delay((d, i) => i * 20)
+                    .style('opacity', 1)
+                    .selection()
+                    .on('mouseover', function(d) {
+                        const regionName = d.properties.name || d.properties['name:ar'];
+                        const regionData = findRegionData(regionName);
+
+                        console.log('🖱️ Survol:', regionName);
+
+                        if (regionData) {
+                            const avgValue = ((regionData.urbain + regionData.rural) / 2).toFixed(1);
+                            d3.select('#map-info').html(
+                                `<strong style="font-size: 16px;">${regionData.name}</strong><br>` +
+                                `<span style="color: #e74c3c; font-weight: bold;">${avgValue}%</span> de chômage moyen`
+                            );
+
+                            // Mettre à jour les visualisations avec animation
+                            updatePieChart(regionData);
+                            updateBarChart(regionData);
+
+                            // Effet visuel
+                            d3.selectAll('.region').classed('active', false).style('opacity', 0.5);
+                            d3.select(this).classed('active', true).style('opacity', 1);
+                        } else {
+                            d3.select('#map-info').html(
+                                `<strong>${regionName}</strong><br>Données non disponibles`
+                            );
+                        }
+                    })
+                    .on('mouseout', function() {
+                        d3.selectAll('.region').classed('active', false).style('opacity', 1);
+                    })
+                    .on('click', function(d) {
+                        const regionName = d.properties.name || d.properties['name:ar'];
+                        const regionData = findRegionData(regionName);
+                        if (regionData) {
+                            alert(`📊 Région: ${regionData.name}\n\n` +
+                                  `🏙️ Urbain: ${regionData.urbain}%\n` +
+                                  `🌾 Rural: ${regionData.rural}%\n` +
+                                  `📈 Moyenne: ${((regionData.urbain + regionData.rural) / 2).toFixed(1)}%`);
+                        }
+                    });
+
+                console.log('✅ Application prête!');
+
+                // Afficher un exemple au démarrage
+                const firstRegionData = testData['Tanger-Tetouan-Al Hoceima'];
+                updatePieChart(firstRegionData);
+                updateBarChart(firstRegionData);
+                d3.select('#pie-info').html(`<strong>${firstRegionData.name}</strong> (exemple)`);
+                d3.select('#bar-info').html(`<strong>${firstRegionData.name}</strong> (exemple)`);
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                alert('Erreur lors du chargement de la carte');
+            });
+    </script>
+</body>
+</html>

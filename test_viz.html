@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Visualisations</title>
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .viz-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 Test des Visualisations D3.js</h1>
+    
+    <div class="container">
+        <div class="viz-box">
+            <h2>📊 Diagramme Circulaire</h2>
+            <svg id="pie-svg" width="400" height="400"></svg>
+        </div>
+        
+        <div class="viz-box">
+            <h2>📈 Histogramme</h2>
+            <svg id="bar-svg" width="500" height="400"></svg>
+        </div>
+    </div>
+
+    <script>
+        console.log('Test des visualisations démarré...');
+
+        // Test 1: Pie Chart
+        function createPieChart() {
+            const svg = d3.select('#pie-svg');
+            const width = 400;
+            const height = 400;
+            const radius = Math.min(width, height) / 2 - 40;
+
+            console.log('Création pie chart - width:', width, 'height:', height, 'radius:', radius);
+
+            const data = [
+                { label: 'Urbain', value: 15.2 },
+                { label: 'Rural', value: 8.3 }
+            ];
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+            const color = d3.scaleOrdinal()
+                .domain(['Urbain', 'Rural'])
+                .range(['#3498db', '#27ae60']);
+
+            const pie = d3.pie()
+                .value(d => d.value)
+                .sort(null);
+
+            const arc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(radius);
+
+            const arcs = g.selectAll('.arc')
+                .data(pie(data))
+                .enter()
+                .append('g')
+                .attr('class', 'arc');
+
+            arcs.append('path')
+                .attr('d', arc)
+                .attr('fill', d => color(d.data.label))
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2);
+
+            arcs.append('text')
+                .attr('transform', d => `translate(${arc.centroid(d)})`)
+                .attr('text-anchor', 'middle')
+                .style('fill', 'white')
+                .style('font-weight', 'bold')
+                .style('font-size', '14px')
+                .text(d => d.data.label);
+
+            arcs.append('text')
+                .attr('transform', d => {
+                    const pos = arc.centroid(d);
+                    return `translate(${pos[0]}, ${pos[1] + 20})`;
+                })
+                .attr('text-anchor', 'middle')
+                .style('fill', 'white')
+                .style('font-weight', 'bold')
+                .text(d => `${d.data.value}%`);
+
+            console.log('✅ Pie chart créé avec succès!');
+        }
+
+        // Test 2: Bar Chart
+        function createBarChart() {
+            const svg = d3.select('#bar-svg');
+            const width = 500;
+            const height = 400;
+            const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+
+            console.log('Création bar chart - innerWidth:', innerWidth, 'innerHeight:', innerHeight);
+
+            const data = [
+                { year: '2015', value: 12.5 },
+                { year: '2016', value: 12.2 },
+                { year: '2017', value: 13.1 },
+                { year: '2018', value: 13.5 },
+                { year: '2019', value: 14.0 },
+                { year: '2020', value: 15.2 },
+                { year: '2021', value: 14.8 },
+                { year: '2022', value: 14.5 },
+                { year: '2023', value: 15.0 }
+            ];
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.year))
+                .range([0, innerWidth])
+                .padding(0.2);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.value) * 1.1])
+                .range([innerHeight, 0]);
+
+            const colorBar = d3.scaleSequential()
+                .domain([0, data.length - 1])
+                .interpolator(d3.interpolateRgb('#667eea', '#764ba2'));
+
+            // Axes
+            g.append('g')
+                .attr('transform', `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end');
+
+            g.append('g')
+                .call(d3.axisLeft(y));
+
+            // Barres
+            g.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.year))
+                .attr('width', x.bandwidth())
+                .attr('y', d => y(d.value))
+                .attr('height', d => innerHeight - y(d.value))
+                .attr('fill', (d, i) => colorBar(i));
+
+            // Ligne de tendance
+            const line = d3.line()
+                .x(d => x(d.year) + x.bandwidth() / 2)
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', '#e74c3c')
+                .attr('stroke-width', 2)
+                .attr('d', line);
+
+            console.log('✅ Bar chart créé avec succès!');
+        }
+
+        // Exécuter les tests
+        try {
+            createPieChart();
+            createBarChart();
+            console.log('✅ Tous les tests réussis!');
+        } catch (error) {
+            console.error('❌ Erreur dans les tests:', error);
+        }
+    </script>
+</body>
+</html>
