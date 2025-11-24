@@ -11,11 +11,13 @@ Une visualisation web interactive utilisant D3.js pour afficher la distribution 
 - **Tooltip élégant** affichant les détails au survol
 - **Légende** pour l'échelle des cercles
 
-### Histogramme Synchronisé
-- **Barres interactives** représentant chaque région
-- **Tri dynamique** : par ordre alphabétique ou par valeur
-- **Synchronisation bidirectionnelle** avec la carte
-- **Valeurs affichées** au-dessus des barres
+### Bar Chart Interactif Adaptatif
+- **Barres comparatives** : Masculin / Féminin / Total
+- **S'adapte dynamiquement** à la région sélectionnée
+- **Couleurs distinctives** : Bleu (masculin), Rouge (féminin), Vert (total)
+- **Valeurs et pourcentages** affichés sur les barres
+- **Message de placeholder** quand aucune région n'est sélectionnée
+- **Animations fluides** lors des changements
 
 ### Graphique Circulaire Adaptatif
 - **Donut chart** affichant la répartition masculin/féminin
@@ -26,8 +28,9 @@ Une visualisation web interactive utilisant D3.js pour afficher la distribution 
 
 ### Interactions
 - **Survol** : surbrillance et affichage du tooltip
-- **Clic sur la carte** → sélection de la région + mise en évidence dans l'histogramme + mise à jour du graphique circulaire
-- **Clic sur l'histogramme** → sélection de la région + mise en évidence sur la carte + mise à jour du graphique circulaire
+- **Clic sur la carte** → sélection de la région + affichage du bar chart détaillé + mise à jour du graphique circulaire
+- **Clic sur une barre** : affiche les détails (nombre et pourcentage)
+- **Bar chart** : affiche Masculin, Féminin et Total pour la région sélectionnée
 - **Graphique circulaire** : affiche la répartition masculin/féminin pour la région sélectionnée
 - **Animations D3** : transitions fluides et élégantes
 - **Design responsive** : s'adapte à toutes les tailles d'écran
@@ -107,6 +110,12 @@ Le graphique circulaire affiche :
 - **Pourcentages** sur chaque secteur
 - **Valeurs absolues** dans la légende
 - **Total au centre** du donut chart
+
+Le bar chart affiche :
+- **3 barres comparatives** : Masculin (bleu), Féminin (rouge), Total (vert)
+- **Valeurs absolues** au-dessus de chaque barre
+- **Pourcentages** pour masculin et féminin
+- **Titre** avec le nom de la région sélectionnée
 
 ## 🎨 Technologies Utilisées
 

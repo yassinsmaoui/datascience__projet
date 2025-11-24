@@ -297,17 +297,25 @@ h1 {
 }
 
 .bar {
-  fill: #3498db;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .bar:hover {
-  fill: #e74c3c;
+  opacity: 0.7 !important;
 }
 
-.bar.selected {
-  fill: #f39c12;
+.bar-placeholder {
+  pointer-events: none;
+}
+
+.chart-region-title {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.bar-percentage {
+  pointer-events: none;
+  font-weight: 600;
 }
 
 .bar-label {

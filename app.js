@@ -170,9 +170,8 @@ function selectRegion(regionData) {
   mapSvg.selectAll('.bubble')
     .classed('selected', d => d.region === regionData.region);
 
-  // Mise en surbrillance dans l'histogramme
-  histogramGroup.selectAll('.bar')
-    .classed('selected', d => d.region === regionData.region);
+  // Mettre à jour le bar chart avec les détails de la région
+  drawBarChart(regionData);
 
   // Mettre à jour le graphique circulaire
   updatePieChart(regionData);
@@ -184,7 +183,7 @@ function selectRegion(regionData) {
 function deselectAll() {
   selectedRegion = null;
   mapSvg.selectAll('.region, .bubble').classed('selected', false);
-  histogramGroup.selectAll('.bar').classed('selected', false);
+  drawBarChart(null);
   updatePieChart(null);
 }
 
@@ -328,31 +327,65 @@ function createLegend(radiusScale) {
 }
 
 // ========================================
-// CRÉATION DE L'HISTOGRAMME
+// CRÉATION DU BAR CHART INTERACTIF
 // ========================================
 
 /**
- * Dessine l'histogramme interactif
+ * Dessine le bar chart interactif pour la région sélectionnée
+ * Affiche les données masculin/féminin en barres groupées
  */
-function drawHistogram(data) {
-  // Nettoyer l'histogramme existant
+function drawBarChart(regionData) {
+  // Nettoyer le graphique existant
   histogramGroup.selectAll('*').remove();
 
-  // Filtrer et trier les données
-  let chartData = data.filter(d => d.total > 0);
-  
-  if (isSorted) {
-    chartData = chartData.sort((a, b) => b.total - a.total);
+  // Si aucune région n'est sélectionnée, afficher un message
+  if (!regionData) {
+    histogramGroup.append('text')
+      .attr('class', 'bar-placeholder')
+      .attr('x', chartWidth / 2)
+      .attr('y', chartHeight / 2 - 20)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '18px')
+      .style('fill', '#7f8c8d')
+      .style('font-weight', 'bold')
+      .text('Sélectionnez une région');
+    
+    histogramGroup.append('text')
+      .attr('class', 'bar-placeholder')
+      .attr('x', chartWidth / 2)
+      .attr('y', chartHeight / 2 + 10)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#95a5a6')
+      .text('pour voir les détails');
+    
+    histogramGroup.append('text')
+      .attr('class', 'bar-placeholder')
+      .attr('x', chartWidth / 2)
+      .attr('y', chartHeight / 2 + 35)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#95a5a6')
+      .text('Masculin vs Féminin');
+    
+    return;
   }
+
+  // Préparer les données pour les barres groupées
+  const barData = [
+    { category: 'Masculin', value: regionData.masculin, color: '#3498db' },
+    { category: 'Féminin', value: regionData.feminin, color: '#e74c3c' },
+    { category: 'Total', value: regionData.total, color: '#2ecc71' }
+  ];
 
   // Échelles
   const xScale = d3.scaleBand()
-    .domain(chartData.map(d => d.region))
+    .domain(barData.map(d => d.category))
     .range([0, chartWidth])
-    .padding(0.2);
+    .padding(0.3);
 
   const yScale = d3.scaleLinear()
-    .domain([0, d3.max(chartData, d => d.total)])
+    .domain([0, d3.max(barData, d => d.value) * 1.1])
     .nice()
     .range([chartHeight, 0]);
 
@@ -360,103 +393,117 @@ function drawHistogram(data) {
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale)
     .ticks(8)
-    .tickFormat(d => d / 1000 + 'k');
+    .tickFormat(d => d >= 1000 ? (d / 1000) + 'k' : d);
 
   // Dessiner les barres
   const bars = histogramGroup.selectAll('.bar')
-    .data(chartData, d => d.region)
-    .join(
-      enter => enter.append('rect')
-        .attr('class', 'bar')
-        .attr('x', d => xScale(d.region))
-        .attr('y', chartHeight)
-        .attr('width', xScale.bandwidth())
-        .attr('height', 0)
-        .on('mouseover', function(event, d) {
-          d3.select(this).classed('highlighted', true);
-          
-          // Mettre en surbrillance la région sur la carte
-          mapSvg.selectAll('.region')
-            .classed('highlighted', feature => {
-              const regionData = findRegionData(feature.properties.name, mergedData);
-              return regionData && regionData.region === d.region;
-            });
-          
-          mapSvg.selectAll('.bubble')
-            .classed('highlighted', bubble => bubble.region === d.region);
-          
-          showTooltip(event, d);
-        })
-        .on('mouseout', function() {
-          d3.select(this).classed('highlighted', false);
-          mapSvg.selectAll('.region, .bubble').classed('highlighted', false);
-          hideTooltip();
-        })
-        .on('click', function(event, d) {
-          selectRegion(d);
-        })
-        .call(enter => enter.transition()
-          .duration(800)
-          .delay((d, i) => i * 50)
-          .attr('y', d => yScale(d.total))
-          .attr('height', d => chartHeight - yScale(d.total))
-        ),
-      update => update.call(update => update.transition()
-        .duration(500)
-        .attr('x', d => xScale(d.region))
-        .attr('y', d => yScale(d.total))
-        .attr('width', xScale.bandwidth())
-        .attr('height', d => chartHeight - yScale(d.total))
-      ),
-      exit => exit.call(exit => exit.transition()
-        .duration(300)
-        .attr('y', chartHeight)
-        .attr('height', 0)
-        .remove()
-      )
-    );
+    .data(barData)
+    .enter()
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => xScale(d.category))
+    .attr('y', chartHeight)
+    .attr('width', xScale.bandwidth())
+    .attr('height', 0)
+    .attr('fill', d => d.color)
+    .attr('rx', 6)
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('opacity', 0.7)
+        .attr('y', yScale(d.value) - 5)
+        .attr('height', chartHeight - yScale(d.value) + 5);
+      
+      // Afficher tooltip
+      const percentage = ((d.value / regionData.total) * 100).toFixed(1);
+      tooltip.transition()
+        .duration(200)
+        .style('opacity', 1)
+        .style('display', 'block');
+      
+      tooltip.html(`
+        <div class="tooltip-title">${d.category}</div>
+        <div class="tooltip-content">
+          <div class="tooltip-row">
+            <span class="tooltip-label">Nombre:</span>
+            <span class="tooltip-value">${formatNumber(d.value)}</span>
+          </div>
+          ${d.category !== 'Total' ? `
+          <div class="tooltip-row">
+            <span class="tooltip-label">Pourcentage:</span>
+            <span class="tooltip-value">${percentage}%</span>
+          </div>` : ''}
+        </div>
+      `)
+      .style('left', (event.pageX + 15) + 'px')
+      .style('top', (event.pageY - 15) + 'px');
+    })
+    .on('mouseout', function(event, d) {
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('opacity', 1)
+        .attr('y', yScale(d.value))
+        .attr('height', chartHeight - yScale(d.value));
+      
+      hideTooltip();
+    });
+
+  // Animation d'apparition
+  bars.transition()
+    .duration(800)
+    .delay((d, i) => i * 150)
+    .attr('y', d => yScale(d.value))
+    .attr('height', d => chartHeight - yScale(d.value));
 
   // Ajouter les valeurs au-dessus des barres
   histogramGroup.selectAll('.bar-value')
-    .data(chartData, d => d.region)
-    .join(
-      enter => enter.append('text')
-        .attr('class', 'bar-value')
-        .attr('x', d => xScale(d.region) + xScale.bandwidth() / 2)
-        .attr('y', chartHeight)
-        .attr('text-anchor', 'middle')
-        .text(d => formatNumber(d.total))
-        .style('opacity', 0)
-        .call(enter => enter.transition()
-          .duration(800)
-          .delay((d, i) => i * 50)
-          .attr('y', d => yScale(d.total) - 5)
-          .style('opacity', 1)
-        ),
-      update => update.call(update => update.transition()
-        .duration(500)
-        .attr('x', d => xScale(d.region) + xScale.bandwidth() / 2)
-        .attr('y', d => yScale(d.total) - 5)
-        .text(d => formatNumber(d.total))
-      ),
-      exit => exit.call(exit => exit.transition()
-        .duration(300)
-        .style('opacity', 0)
-        .remove()
-      )
-    );
+    .data(barData)
+    .enter()
+    .append('text')
+    .attr('class', 'bar-value')
+    .attr('x', d => xScale(d.category) + xScale.bandwidth() / 2)
+    .attr('y', chartHeight)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '14px')
+    .style('font-weight', 'bold')
+    .style('fill', '#2c3e50')
+    .style('opacity', 0)
+    .text(d => formatNumber(d.value))
+    .transition()
+    .duration(800)
+    .delay((d, i) => i * 150)
+    .attr('y', d => yScale(d.value) - 10)
+    .style('opacity', 1);
 
-  // Axe X avec labels inclinés
+  // Ajouter les pourcentages
+  histogramGroup.selectAll('.bar-percentage')
+    .data(barData.filter(d => d.category !== 'Total'))
+    .enter()
+    .append('text')
+    .attr('class', 'bar-percentage')
+    .attr('x', d => xScale(d.category) + xScale.bandwidth() / 2)
+    .attr('y', chartHeight)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '12px')
+    .style('fill', '#7f8c8d')
+    .style('opacity', 0)
+    .text(d => ((d.value / regionData.total) * 100).toFixed(1) + '%')
+    .transition()
+    .duration(800)
+    .delay((d, i) => i * 150 + 200)
+    .attr('y', d => yScale(d.value) - 28)
+    .style('opacity', 1);
+
+  // Axe X
   histogramGroup.append('g')
     .attr('class', 'axis x-axis')
     .attr('transform', `translate(0, ${chartHeight})`)
     .call(xAxis)
     .selectAll('text')
-    .attr('class', 'bar-label')
-    .attr('transform', 'rotate(-45)')
-    .style('text-anchor', 'end')
-    .attr('dx', '-0.8em')
-    .attr('dy', '0.15em');
+    .style('font-size', '13px')
+    .style('font-weight', '600');
 
   // Axe Y
   histogramGroup.append('g')
@@ -471,6 +518,21 @@ function drawHistogram(data) {
     .attr('y', -60)
     .attr('text-anchor', 'middle')
     .text('Nombre de retraités');
+
+  // Titre avec le nom de la région
+  histogramGroup.append('text')
+    .attr('class', 'chart-region-title')
+    .attr('x', chartWidth / 2)
+    .attr('y', -15)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '16px')
+    .style('font-weight', 'bold')
+    .style('fill', '#2c3e50')
+    .style('opacity', 0)
+    .text(regionData.region)
+    .transition()
+    .duration(600)
+    .style('opacity', 1);
 }
 
 // ========================================
@@ -695,13 +757,11 @@ function updatePieChart(regionData) {
 // ========================================
 
 /**
- * Gère le tri de l'histogramme
+ * Affiche un aperçu de toutes les régions au clic
  */
 d3.select('#sortBtn').on('click', function() {
-  isSorted = !isSorted;
-  const btn = d3.select(this);
-  btn.text(isSorted ? 'Ordre alphabétique' : 'Trier par valeur');
-  drawHistogram(mergedData);
+  // Désélectionner pour voir toutes les régions sur la carte
+  deselectAll();
 });
 
 /**
@@ -738,9 +798,9 @@ async function init() {
     // Filtrer le TOTAL des données
     const filteredData = excelData.filter(d => d.region !== 'TOTAL');
 
-    // Dessiner la carte, l'histogramme et le graphique circulaire
+    // Dessiner la carte, le bar chart et le graphique circulaire
     drawMap(regions, filteredData);
-    drawHistogram(filteredData);
+    drawBarChart(null); // Initialiser avec aucune sélection
     updatePieChart(null); // Initialiser avec aucune sélection
 
     console.log('✓ Visualisation chargée avec succès');
