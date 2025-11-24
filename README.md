@@ -1,163 +1,218 @@
-# 📊 Visualisation Interactive du Chômage au Maroc
+# 📊 Visualisation Interactive - Répartition des Retraités au Maroc 2022
 
-Application web interactive pour analyser les taux de chômage par région au Maroc (2015-2023).
+Une visualisation web interactive utilisant D3.js pour afficher la distribution géographique des retraités du Régime de Pensions Civiles (RPC) au Maroc en 2022.
 
 ## 🎯 Fonctionnalités
 
-### Visualisations
-- **Carte Choroplèthe**: Coloration des régions selon le taux de chômage
-- **Diagramme Circulaire**: Répartition Urbain/Rural par région
-- **Histogramme**: Évolution temporelle (2015-2023)
+### Carte Interactive
+- **Carte du Maroc** avec TopoJSON des régions
+- **Cercles proportionnels** : taille basée sur le nombre de retraités
+- **Projection Mercator** adaptée au Maroc
+- **Tooltip élégant** affichant les détails au survol
+- **Légende** pour l'échelle des cercles
 
-### Interactivité
-- ✅ Filtres par année (2015-2023) et sexe (Total, Masculin, Féminin)
-- ✅ Synchronisation entre les 3 visualisations
-- ✅ Au survol: affichage du taux de chômage
-- ✅ Au clic: sélection de région et mise à jour des graphiques
-- ✅ Animations fluides entre les états
-- ✅ Légende interactive avec échelle de couleurs
+### Histogramme Synchronisé
+- **Barres interactives** représentant chaque région
+- **Tri dynamique** : par ordre alphabétique ou par valeur
+- **Synchronisation bidirectionnelle** avec la carte
+- **Valeurs affichées** au-dessus des barres
 
-### Fonctionnalités Avancées
-- 📥 **Export des données** au format CSV
-- ⚖️ **Mode Comparaison** entre deux régions
-- 🎨 Échelle de couleurs dynamique (vert → rouge)
-- 📱 Design responsive
+### Graphique Circulaire Adaptatif
+- **Donut chart** affichant la répartition masculin/féminin
+- **S'adapte dynamiquement** à la région sélectionnée
+- **Animations fluides** lors des changements
+- **Légende interactive** avec détails complets
+- **Message de placeholder** quand aucune région n'est sélectionnée
 
-## 🏗️ Structure du Projet
+### Interactions
+- **Survol** : surbrillance et affichage du tooltip
+- **Clic sur la carte** → sélection de la région + mise en évidence dans l'histogramme + mise à jour du graphique circulaire
+- **Clic sur l'histogramme** → sélection de la région + mise en évidence sur la carte + mise à jour du graphique circulaire
+- **Graphique circulaire** : affiche la répartition masculin/féminin pour la région sélectionnée
+- **Animations D3** : transitions fluides et élégantes
+- **Design responsive** : s'adapte à toutes les tailles d'écran
+
+## 📁 Structure du Projet
 
 ```
 datascience_projet/
-├── index.html              # Structure HTML principale
-├── style.css               # Styles CSS avancés
-├── app.js                  # Logique principale de l'application
-├── dataProcessor.js        # Module de traitement des données
-├── Taux de chomage par sexe et region.csv  # Données source
-└── README.md              # Documentation
+├── index.html                              # Page principale
+├── app.js                                  # Script D3.js avec toute la logique
+├── styles.css                              # Styles CSS complets
+├── data.json                               # Données converties depuis Excel
+├── convert_excel.js                        # Script de conversion Excel → JSON
+├── repartition-retraites-par-region_2022.xlsx  # Fichier Excel source
+└── README.md                               # Documentation
 ```
 
-## 🚀 Utilisation
+## 🚀 Installation et Utilisation
 
-### Démarrage Rapide
+### Prérequis
+- Node.js installé sur votre machine
+- Navigateur web moderne (Chrome, Firefox, Edge, Safari)
 
-1. **Ouvrir le projet**:
-   - Option 1: Double-cliquer sur `index.html`
-   - Option 2: Utiliser un serveur local (recommandé)
+### Étape 1 : Convertir les données Excel
 
-2. **Avec serveur local** (Python):
-   ```bash
-   # Python 3
-   python -m http.server 8000
-   
-   # Puis ouvrir: http://localhost:8000
-   ```
+```bash
+# Installer les dépendances (si nécessaire)
+npm install xlsx
 
-3. **Avec serveur local** (Node.js):
-   ```bash
-   npx http-server -p 8000
-   
-   # Puis ouvrir: http://localhost:8000
-   ```
+# Convertir le fichier Excel en JSON
+node convert_excel.js
+```
 
-### Navigation
+Cela génère le fichier `data.json` avec les données formatées.
 
-1. **Sélectionner les filtres**:
-   - Choisir une année (2015-2023)
-   - Choisir un sexe (Total, Masculin, Féminin)
+### Étape 2 : Lancer le serveur local
 
-2. **Interagir avec la carte**:
-   - Survoler une région pour voir le taux
-   - Cliquer pour sélectionner et mettre à jour les autres visualisations
+```bash
+# Option 1 : Avec Python
+python -m http.server 8000
 
-3. **Exporter les données**:
-   - Cliquer sur "📊 Exporter les données"
-   - Un fichier CSV sera téléchargé
+# Option 2 : Avec Node.js
+npx http-server -p 8000
+```
 
-4. **Comparer des régions**:
-   - Cliquer sur "⚖️ Mode Comparaison"
-   - Sélectionner deux régions à comparer
-   - Visualiser l'évolution comparative
+### Étape 3 : Ouvrir dans le navigateur
 
-## 📚 Technologies Utilisées
+Ouvrez votre navigateur et accédez à :
+```
+http://localhost:8000
+```
 
-- **D3.js v5.6.0**: Bibliothèque de visualisation
-- **TopoJSON v3.0.2**: Format de données géographiques
-- **D3-tip**: Tooltips interactifs
-- **HTML5/CSS3**: Structure et design
-- **JavaScript ES6**: Logique applicative
+## 💡 Utilisation
 
-## 🎨 Échelle de Couleurs
+### Boutons de Contrôle
 
-L'échelle de couleurs de la carte choroplèthe représente:
-- 🟢 **Vert**: Faible taux de chômage
-- 🟡 **Jaune**: Taux moyen
-- 🟠 **Orange**: Taux élevé
-- 🔴 **Rouge**: Taux très élevé
+- **Trier par valeur** : Réorganise l'histogramme par ordre décroissant/alphabétique
+- **Réinitialiser la sélection** : Désélectionne toutes les régions
 
-L'échelle s'ajuste automatiquement selon les données de l'année et du sexe sélectionnés.
+### Interactions
+
+1. **Survolez une région** sur la carte ou une barre dans l'histogramme pour voir les détails
+2. **Cliquez sur une région** pour la sélectionner (synchronisation carte ↔ histogramme)
+3. **Cliquez à nouveau** pour désélectionner
+
+### Données Affichées
+
+Pour chaque région, le tooltip affiche :
+- **Nom de la région**
+- **Total de retraités**
+- **Nombre masculin**
+- **Nombre féminin**
+- **Pourcentage féminin**
+
+Le graphique circulaire affiche :
+- **Répartition visuelle** masculin (bleu) / féminin (rouge)
+- **Pourcentages** sur chaque secteur
+- **Valeurs absolues** dans la légende
+- **Total au centre** du donut chart
+
+## 🎨 Technologies Utilisées
+
+- **D3.js v7** : Visualisation de données
+- **TopoJSON** : Format de données géographiques
+- **Vanilla JavaScript** : Logique applicative
+- **CSS3** : Styles et animations
+- **HTML5** : Structure de la page
 
 ## 📊 Sources des Données
 
-- **Fichier CSV**: `Taux de chomage par sexe et region.csv`
-- **Carte du Maroc**: [morocco-map](https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json)
-- **Période**: 2015-2023
-- **Régions**: 12 régions du Maroc
+- **Fichier Excel** : `repartition-retraites-par-region_2022.xlsx`
+- **Carte du Maroc** : [morocco-map](https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json) (TopoJSON)
+- **Année** : 2022
+- **Source** : Régime de Pensions Civiles (RPC)
 
-## 🔧 Traitement des Données
+## 🔧 Personnalisation
 
-Le module `dataProcessor.js` gère:
-- Nettoyage des données CSV
-- Correspondance entre noms de régions (CSV ↔ Carte)
-- Agrégations et filtres
-- Gestion des valeurs manquantes
-- Export des données
+### Modifier les Couleurs
 
-## 🎯 Régions Disponibles
+Dans `styles.css`, modifiez les variables :
 
-1. Tanger-Tétouan-Al Hoceïma
-2. Oriental
-3. Fès-Meknès
-4. Rabat-Salé-Kénitra
-5. Béni Mellal-Khénifra
-6. Casablanca-Settat
-7. Marrakech-Safi
-8. Drâa-Tafilalet
-9. Souss-Massa
-10. Régions du Sud
+```css
+.region {
+  fill: #3498db;  /* Couleur des régions */
+}
 
-## 🐛 Dépannage
+.bubble {
+  fill: rgba(231, 76, 60, 0.6);  /* Couleur des cercles */
+}
+```
 
-### La carte ne s'affiche pas
-- Vérifiez votre connexion internet (carte chargée depuis CDN)
-- Utilisez un serveur local au lieu d'ouvrir directement le fichier HTML
+### Ajuster les Dimensions
 
-### Les données ne se chargent pas
-- Vérifiez que le fichier CSV est dans le même dossier
-- Vérifiez la console du navigateur pour les erreurs
+Dans `app.js`, modifiez les constantes :
 
-### Problèmes de performance
-- Utilisez un navigateur moderne (Chrome, Firefox, Edge)
-- Fermez les autres onglets pour libérer de la mémoire
+```javascript
+const width = 900;   // Largeur de la carte
+const height = 900;  // Hauteur de la carte
+const histogramWidth = 500;   // Largeur de l'histogramme
+const histogramHeight = 800;  // Hauteur de l'histogramme
+```
+
+### Changer l'Échelle des Cercles
+
+Dans `app.js`, modifiez la fonction `radiusScale` :
+
+```javascript
+const radiusScale = d3.scaleSqrt()
+  .domain([0, d3.max(mergedData, d => d.total)])
+  .range([0, 50]);  // [rayon min, rayon max]
+```
 
 ## 📱 Responsive Design
 
-L'application s'adapte automatiquement aux différentes tailles d'écran:
-- **Desktop**: Layout 3 colonnes (carte 50% + 2 graphiques 25% chacun)
-- **Tablet/Mobile**: Layout 1 colonne empilée
+La visualisation s'adapte automatiquement aux différentes tailles d'écran :
 
-## 🔒 Notes sur les Données
+- **Desktop** (> 1200px) : Carte et histogramme côte à côte
+- **Tablette** (768px - 1200px) : Carte au-dessus de l'histogramme
+- **Mobile** (< 768px) : Layout vertical optimisé
 
-- Certaines régions peuvent avoir des données manquantes (affichées comme `-` dans le CSV)
-- Les valeurs manquantes sont représentées en gris sur la carte
-- Les calculs excluent automatiquement les valeurs manquantes
+## 🐛 Dépannage
 
-## 📝 Licence
+### Erreur CORS
+Si vous obtenez une erreur CORS, assurez-vous d'utiliser un serveur HTTP local (pas d'ouverture directe du fichier).
 
-Ce projet est à but éducatif et de visualisation des données publiques.
+### Données non affichées
+Vérifiez que le fichier `data.json` existe et est correctement formaté :
+```bash
+node convert_excel.js
+```
+
+### Problèmes de chargement
+Ouvrez la console du navigateur (F12) pour voir les messages d'erreur détaillés.
+
+## 📈 Statistiques des Données (2022)
+
+- **Nombre total de régions** : 12 (+ 1 ligne TOTAL exclue)
+- **Total des retraités** : 331 151
+- **Région avec le plus de retraités** : Rabat-Salé-Kénitra (86 331)
+- **Région avec le moins de retraités** : Dakhla-Oued Ed Dahab (368)
+
+## 🤝 Contribution
+
+Pour améliorer ce projet :
+
+1. Fork le repository
+2. Créez une branche (`git checkout -b feature/amelioration`)
+3. Committez vos changements (`git commit -am 'Ajout de fonctionnalité'`)
+4. Push vers la branche (`git push origin feature/amelioration`)
+5. Créez une Pull Request
+
+## 📄 Licence
+
+Ce projet est open source et disponible sous licence MIT.
 
 ## 👨‍💻 Auteur
 
-Créé avec ❤️ pour l'analyse des données du chômage au Maroc.
+Créé avec ❤️ pour la visualisation de données au Maroc.
+
+## 🙏 Remerciements
+
+- [D3.js](https://d3js.org/) pour la bibliothèque de visualisation
+- [morocco-map](https://github.com/DevloperMM/morocco-map) pour les données géographiques
+- La communauté open source
 
 ---
 
-**Note**: Pour une meilleure expérience, utilisez un serveur local HTTP plutôt que d'ouvrir directement le fichier HTML dans le navigateur.
+**Bon usage ! 🚀**

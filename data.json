@@ -1,0 +1,80 @@
+[
+  {
+    "region": "Tanger-Tétouan-Al Hoceïma",
+    "feminin": 6527,
+    "masculin": 19018,
+    "total": 25545
+  },
+  {
+    "region": "Oriental",
+    "feminin": 5552,
+    "masculin": 17602,
+    "total": 23154
+  },
+  {
+    "region": "Fès-Meknès",
+    "feminin": 14492,
+    "masculin": 30833,
+    "total": 45325
+  },
+  {
+    "region": "Rabat-Salé-Kénitra",
+    "feminin": 32112,
+    "masculin": 54219,
+    "total": 86331
+  },
+  {
+    "region": "Béni Mellal-Khénifra",
+    "feminin": 4095,
+    "masculin": 13604,
+    "total": 17699
+  },
+  {
+    "region": "Casablanca-Settat",
+    "feminin": 26475,
+    "masculin": 45839,
+    "total": 72314
+  },
+  {
+    "region": "Marrakech-Safi",
+    "feminin": 11035,
+    "masculin": 22907,
+    "total": 33942
+  },
+  {
+    "region": "Drâa-Tafilalet",
+    "feminin": 1019,
+    "masculin": 7059,
+    "total": 8078
+  },
+  {
+    "region": "Souss-Massa",
+    "feminin": 3215,
+    "masculin": 11802,
+    "total": 15017
+  },
+  {
+    "region": "Guelmim-Oued Noun",
+    "feminin": 206,
+    "masculin": 1447,
+    "total": 1653
+  },
+  {
+    "region": "Laâyoune-Sakia El Hamra",
+    "feminin": 370,
+    "masculin": 1355,
+    "total": 1725
+  },
+  {
+    "region": "Dakhla-Oued Ed Dahab",
+    "feminin": 76,
+    "masculin": 292,
+    "total": 368
+  },
+  {
+    "region": "TOTAL",
+    "feminin": 105174,
+    "masculin": 225977,
+    "total": 331151
+  }
+]
