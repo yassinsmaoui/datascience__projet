@@ -9,49 +9,134 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Styles CSS -->
     <link rel="stylesheet" href="styles.css">
     
-    <title>Visualisation Interactive - Répartition des Retraités au Maroc 2022</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
+    <title>Dashboard Retraités Maroc 2022 | Visualisation Interactive</title>
 </head>
 <body>
     <!-- Conteneur principal -->
     <div class="container">
-        <!-- En-tête -->
-        <h1>📊 Répartition des Retraités par Région</h1>
-        <p class="subtitle">Maroc 2022 - Régime de Pensions Civiles (RPC)</p>
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Répartition des Retraités par Région</h1>
+            <p class="subtitle">Maroc 2022 • Régime de Pensions Civiles (RPC) • Dashboard Analytique</p>
+        </header>
+        
+        <!-- Barre de statistiques globales -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon total">👥</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalRetraites">331 151</span>
+                    <span class="stat-label">Total Retraités</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon male">👨</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalMasculin">225 977</span>
+                    <span class="stat-label">Masculin (68%)</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon female">👩</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalFeminin">105 174</span>
+                    <span class="stat-label">Féminin (32%)</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon regions">🗺️</div>
+                <div class="stat-info">
+                    <span class="stat-value">12</span>
+                    <span class="stat-label">Régions</span>
+                </div>
+            </div>
+        </div>
         
         <!-- Contrôles -->
         <div class="controls">
-            <button id="sortBtn" class="btn btn-primary">Réinitialiser la vue</button>
-            <button id="resetBtn" class="btn btn-secondary">Désélectionner</button>
+            <button id="sortBtn" class="btn btn-primary">
+                <span>🔄</span> Réinitialiser la vue
+            </button>
+            <button id="resetBtn" class="btn btn-secondary">
+                <span>✖</span> Désélectionner
+            </button>
         </div>
         
-        <!-- Wrapper des visualisations -->
-        <div class="visualization-wrapper">
-            <!-- Conteneur de la carte -->
-            <div class="map-container">
-                <svg id="map"></svg>
-                
-                <!-- Légende -->
-                <div class="legend"></div>
-            </div>
-            
-            <!-- Conteneur des graphiques (histogramme + circulaire) -->
-            <div class="charts-wrapper">
-                <!-- Graphique circulaire -->
-                <div class="pie-chart-container">
-                    <h2 class="chart-title">Répartition Masculin/Féminin</h2>
-                    <svg id="pieChart"></svg>
+        <!-- Contenu principal -->
+        <main class="main-content">
+            <!-- Wrapper des visualisations -->
+            <div class="visualization-wrapper">
+                <!-- Conteneur de la carte -->
+                <div class="map-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <span class="card-title-icon map">🗺️</span>
+                                Carte Interactive du Maroc
+                            </h2>
+                            <span class="card-badge">Live</span>
+                        </div>
+                        <div class="card-body">
+                            <svg id="map"></svg>
+                            <!-- Légende -->
+                            <div class="legend"></div>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Conteneur de l'histogramme -->
-                <div class="chart-container">
-                    <h2 class="chart-title">Détails de la Région</h2>
-                    <svg id="histogram"></svg>
+                <!-- Conteneur des graphiques -->
+                <div class="charts-wrapper">
+                    <!-- Graphique circulaire -->
+                    <div class="pie-chart-container">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">
+                                    <span class="card-title-icon pie">🎯</span>
+                                    Répartition par Genre
+                                </h2>
+                            </div>
+                            <div class="card-body">
+                                <svg id="pieChart"></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conteneur de l'histogramme -->
+                    <div class="chart-container">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">
+                                    <span class="card-title-icon chart">📈</span>
+                                    Détails de la Région
+                                </h2>
+                            </div>
+                            <div class="card-body">
+                                <svg id="histogram"></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">
+                © 2024 Dashboard Analytique • Données: Régime de Pensions Civiles • 
+                <a href="https://github.com/yassinsmaoui/datascience__projet" target="_blank">GitHub</a>
+            </p>
+        </footer>
         
         <!-- Indicateur de chargement -->
         <div class="loading">

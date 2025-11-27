@@ -1,0 +1,824 @@
+\documentclass[12pt,a4paper]{report}
+
+% Encodage et langue
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% Mise en page
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+% Liens et couleurs
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% Définition des couleurs du thème
+\definecolor{primaryblue}{RGB}{102, 126, 234}
+\definecolor{primarypurple}{RGB}{118, 75, 162}
+\definecolor{darkblue}{RGB}{30, 64, 175}
+\definecolor{lightgray}{RGB}{248, 250, 252}
+\definecolor{darkgray}{RGB}{71, 85, 105}
+\definecolor{accentgreen}{RGB}{16, 185, 129}
+\definecolor{accentpink}{RGB}{236, 72, 153}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=primarypurple,
+    citecolor=accentgreen,
+    pdftitle={Visualisation Interactive - Retraités Maroc 2022},
+    pdfauthor={Yassine Smaoui, Bilal El Ibrahimi, Hanane Ousha}
+}
+
+% Diagrammes
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, shadows, calc, decorations.pathreplacing}
+
+% Code source avec style amélioré
+\usepackage{listings}
+\lstset{
+    language=JavaScript,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{primaryblue}\bfseries,
+    commentstyle=\color{accentgreen}\itshape,
+    stringstyle=\color{accentpink},
+    numberstyle=\tiny\color{darkgray},
+    numbers=left,
+    numbersep=8pt,
+    frame=single,
+    frameround=tttt,
+    framesep=5pt,
+    rulecolor=\color{primaryblue!30},
+    backgroundcolor=\color{lightgray},
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b
+}
+
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm,
+    headheight=15pt
+}
+\setstretch{1.4}
+
+% En-têtes et pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{darkgray}{Visualisation Interactive des Données}}
+\fancyhead[R]{\small\textcolor{darkgray}{Maroc 2022}}
+\fancyfoot[C]{\textcolor{primaryblue}{\thepage} / \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primaryblue}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% Style des chapitres amélioré
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries\color{darkblue}}
+    {\tikz[remember picture,overlay] \node[fill=primaryblue!10, minimum width=3cm, minimum height=1.2cm, anchor=west, rounded corners=5pt] at (0,0) {\textcolor{primaryblue}{\huge Chapitre \thechapter}};}
+    {20pt}
+    {\vspace{10pt}\color{darkblue}}
+\titlespacing*{\chapter}{0pt}{-20pt}{30pt}
+
+% Style des sections
+\titleformat{\section}
+    {\normalfont\Large\bfseries\color{primarypurple}}
+    {\textcolor{primaryblue}{\thesection}}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries\color{darkgray}}
+    {\textcolor{primaryblue}{\thesubsection}}{1em}{}
+
+\begin{document}
+
+% ============================================================
+%                       PAGE DE GARDE
+% ============================================================
+
+\begin{titlepage}
+    \begin{tikzpicture}[remember picture, overlay]
+        % Fond avec dégradé simulé
+        \fill[primaryblue!8] (current page.south west) rectangle (current page.north east);
+        
+        % Formes décoratives
+        \fill[primaryblue!20, rounded corners=30pt] 
+            ([xshift=-3cm, yshift=3cm]current page.south west) 
+            rectangle ([xshift=8cm, yshift=-2cm]current page.north west);
+        \fill[primarypurple!15, rounded corners=50pt] 
+            ([xshift=-5cm, yshift=-5cm]current page.north east) 
+            circle (8cm);
+        \fill[accentgreen!10, rounded corners=30pt] 
+            ([xshift=2cm, yshift=2cm]current page.south east) 
+            circle (5cm);
+        
+        % Ligne décorative en haut
+        \draw[primaryblue, line width=3pt] 
+            ([yshift=-1cm]current page.north west) -- ([yshift=-1cm]current page.north east);
+        \draw[primarypurple, line width=1.5pt] 
+            ([yshift=-1.4cm]current page.north west) -- ([yshift=-1.4cm]current page.north east);
+    \end{tikzpicture}
+    
+    \centering
+    \vspace*{1cm}
+    
+    % Logo
+    \includegraphics[width=0.4\textwidth]{images/fplogo.png}\\[1.5cm]
+    
+    % Titre principal
+    \begin{tikzpicture}
+        \node[inner sep=15pt, fill=white, rounded corners=10pt, 
+              drop shadow={shadow xshift=2pt, shadow yshift=-2pt, opacity=0.3}] {
+            \begin{minipage}{0.85\textwidth}
+                \centering
+                {\fontsize{28}{34}\selectfont\bfseries\textcolor{darkblue}{Visualisation Interactive}}\\[8pt]
+                {\fontsize{22}{28}\selectfont\bfseries\textcolor{primarypurple}{des Données Régionales du Maroc}}\\[12pt]
+                {\Large\textcolor{darkgray}{Répartition des Retraités 2022}}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+    
+    \vspace{1.5cm}
+    
+    % Badge projet
+    \tikz \node[fill=primaryblue, text=white, rounded corners=5pt, inner sep=10pt, font=\large\bfseries] {Rapport de Projet};
+    
+    \vspace{2cm}
+    
+    % Informations du groupe
+    \begin{tikzpicture}
+        \node[inner sep=20pt, fill=white, rounded corners=10pt, 
+              draw=primaryblue!30, line width=1pt,
+              drop shadow={shadow xshift=1pt, shadow yshift=-1pt, opacity=0.2}] {
+            \begin{minipage}{0.7\textwidth}
+                \centering
+                {\large\textcolor{primaryblue}{\textbf{Réalisé par}}}\\[15pt]
+                \begin{tabular}{c}
+                    {\Large\textbf{Yassine Smaoui}}\\[8pt]
+                    {\Large\textbf{Bilal El Ibrahimi}}\\[8pt]
+                    {\Large\textbf{Hanane Ousha}}\\
+                \end{tabular}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+    
+    \vspace{1.5cm}
+    
+    % Informations supplémentaires
+    \begin{tikzpicture}
+        \node[inner sep=15pt, fill=lightgray, rounded corners=8pt] {
+            \begin{minipage}{0.65\textwidth}
+                \centering
+                \begin{tabular}{rl}
+                    \textcolor{primaryblue}{$\blacktriangleright$} \textbf{Module :} & Data Science \\[5pt]
+                    \textcolor{primarypurple}{$\blacktriangleright$} \textbf{Filière :} & Science des Données \\[5pt]
+                    \textcolor{accentgreen}{$\blacktriangleright$} \textbf{Encadrant :} & Pr. [Nom de l'encadrant] \\[5pt]
+                    \textcolor{darkblue}{$\blacktriangleright$} \textbf{Année :} & 2024/2025 \\
+                \end{tabular}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+    
+    \vfill
+    
+    % Pied de page de la page de garde
+    \begin{tikzpicture}[remember picture, overlay]
+        \draw[primaryblue, line width=2pt] 
+            ([yshift=1.5cm]current page.south west) -- ([yshift=1.5cm]current page.south east);
+        \node[anchor=south] at ([yshift=0.5cm]current page.south) {
+            \textcolor{darkgray}{\small Faculté Polydisciplinaire • Université [Nom]}
+        };
+    \end{tikzpicture}
+\end{titlepage}
+
+% ============================================================
+%                     TABLE DES MATIÈRES
+% ============================================================
+
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+
+% ============================================================
+%                          RÉSUMÉ
+% ============================================================
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+\begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=north east, opacity=0.1] at ([xshift=-1cm, yshift=-2cm]current page.north east) {
+        \fontsize{120}{120}\selectfont\textcolor{primaryblue}{"}
+    };
+\end{tikzpicture}
+
+Ce projet a pour objectif de développer une \textbf{visualisation interactive} des données socio-économiques régionales du Maroc. Les données proviennent du fichier Excel \textit{repartition-retraites-par-region\_2022.xlsx}, contenant le nombre de retraités par région, répartis entre hommes et femmes.
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[inner sep=15pt, fill=primaryblue!5, rounded corners=10pt, draw=primaryblue!30, line width=0.5pt] {
+        \begin{minipage}{0.85\textwidth}
+            \textbf{\textcolor{primaryblue}{Technologies utilisées :}}
+            \begin{itemize}
+                \item \textbf{D3.js} -- Bibliothèque de visualisation de données
+                \item \textbf{TopoJSON} -- Format géographique optimisé
+                \item \textbf{HTML5 / CSS3} -- Structure et design moderne
+                \item \textbf{JavaScript ES6+} -- Logique applicative
+            \end{itemize}
+        \end{minipage}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+Le résultat final inclut une \textbf{carte interactive} du Maroc, un \textbf{histogramme dynamique}, ainsi que des \textbf{cercles proportionnels} superposés à la carte, permettant une exploration intuitive et interactive des données.
+
+% ============================================================
+%                        INTRODUCTION
+% ============================================================
+
+\chapter{Introduction}
+
+\begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=north east, opacity=0.05] at ([xshift=-0.5cm, yshift=-3cm]current page.north east) {
+        \fontsize{150}{150}\selectfont\textcolor{primaryblue}{1}
+    };
+\end{tikzpicture}
+
+La visualisation de données joue un rôle essentiel dans l'analyse moderne, en permettant de transformer des informations brutes en représentations graphiques compréhensibles. Dans ce projet, nous nous intéressons aux données socio-économiques régionales du Maroc, plus précisément à la \textbf{répartition des retraités par région}.
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[inner sep=18pt, fill=accentgreen!8, rounded corners=12pt, draw=accentgreen!40, line width=1pt] {
+        \begin{minipage}{0.88\textwidth}
+            \textcolor{accentgreen}{\textbf{\large Objectif du projet}}\\[8pt]
+            Rendre les données interactives et accessibles grâce à une interface web intuitive permettant d'explorer les données via :
+            \begin{itemize}
+                \item Une \textbf{carte interactive} du Maroc
+                \item Un \textbf{histogramme dynamique}
+                \item Des \textbf{cercles proportionnels}
+                \item Un \textbf{graphique circulaire} (donut chart)
+            \end{itemize}
+        \end{minipage}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+La représentation d'informations sur carte présente un avantage important : elle \textit{contextualise visuellement} les données dans leur dimension géographique, facilitant ainsi la compréhension et l'analyse des disparités régionales.
+
+% ============================================================
+%                      JEU DE DONNÉES
+% ============================================================
+
+\chapter{Jeu de données}
+
+\section{Source des données}
+
+Les données utilisées dans ce projet proviennent du \textbf{Portail National des Données Ouvertes du Maroc} (data.gov.ma), une plateforme officielle qui met à disposition du public des jeux de données gouvernementaux dans un esprit de transparence et d'open data.
+
+\begin{center}
+\begin{tikzpicture}
+    \node[inner sep=15pt, fill=primaryblue!8, rounded corners=12pt, draw=primaryblue!40, line width=1pt] {
+        \begin{minipage}{0.9\textwidth}
+            \centering
+            \textcolor{primaryblue}{\textbf{\large Source officielle des données}}\\[10pt]
+          
+\href{https://data.gov.ma/data/fr/dataset/repartition-geographique-des-retraites-par-region-2022}{Répartition géographique des retraités par région 2022}            
+        \end{minipage}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+Ce jeu de données présente la \textbf{répartition géographique des bénéficiaires du Régime de Pensions Civiles (RPC)} géré par la Caisse Marocaine des Retraites (CMR). Il s'agit des fonctionnaires civils de l'État ayant atteint l'âge de la retraite et percevant une pension. Les données sont ventilées par région administrative et par genre (masculin/féminin), offrant ainsi une vision claire des disparités territoriales en matière de couverture retraite au Maroc.
+
+\section{Structure du fichier}
+
+Le fichier utilisé est nommé \textbf{repartition-retraites-par-region\_2022.xlsx}. Il contient les colonnes suivantes :
+
+\begin{center}
+\begin{tikzpicture}
+    \node[inner sep=12pt, fill=lightgray, rounded corners=8pt] {
+        \begin{minipage}{0.6\textwidth}
+            \begin{itemize}
+                \item[\textcolor{primaryblue}{$\bullet$}] \textbf{Région} -- Nom de la région administrative
+                \item[\textcolor{accentpink}{$\bullet$}] \textbf{Féminin} -- Nombre de retraitées femmes
+                \item[\textcolor{darkblue}{$\bullet$}] \textbf{Masculin} -- Nombre de retraités hommes
+                \item[\textcolor{accentgreen}{$\bullet$}] \textbf{Total} -- Somme des deux catégories
+            \end{itemize}
+        \end{minipage}
+    };
+\end{tikzpicture}
+\end{center}
+
+\section{Aperçu des données}
+
+\begin{center}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\rowcolor{primaryblue!15}
+\textbf{Région} & \textbf{Féminin} & \textbf{Masculin} & \textbf{Total} \\
+\hline
+Tanger-Tétouan-Al Hoceïma & 6 527 & 19 018 & 25 545 \\
+\hline
+Oriental & 5 552 & 17 602 & 23 154 \\
+\hline
+Fès-Meknès & 14 492 & 30 833 & 45 325 \\
+\hline
+Rabat-Salé-Kénitra & 32 112 & 54 219 & 86 331 \\
+\hline
+Béni Mellal-Khénifra & 4 095 & 13 604 & 17 699 \\
+\hline
+Casablanca-Settat & 26 475 & 45 839 & 72 314 \\
+\hline
+\rowcolor{accentgreen!15}
+\textbf{TOTAL NATIONAL} & \textbf{105 174} & \textbf{225 977} & \textbf{331 151} \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[inner sep=15pt, fill=accentgreen!10, rounded corners=10pt, draw=accentgreen!50, line width=1pt] {
+        \begin{minipage}{0.95\textwidth}
+            \centering
+            \textcolor{accentgreen}{\textbf{\large Statistiques clés}}\\[10pt]
+            \begin{tabular}{ccc}
+                \begin{tikzpicture}
+                    \node[fill=primaryblue!20, rounded corners=5pt, inner sep=10pt] {
+                        \begin{minipage}{4cm}
+                            \centering
+                            \textbf{\Large 12}\\
+                            \small Régions couvertes
+                        \end{minipage}
+                    };
+                \end{tikzpicture}
+                &
+                \begin{tikzpicture}
+                    \node[fill=accentpink!20, rounded corners=5pt, inner sep=10pt] {
+                        \begin{minipage}{4cm}
+                            \centering
+                            \textbf{\Large 331 151}\\
+                            \small Retraités au total
+                        \end{minipage}
+                    };
+                \end{tikzpicture}
+                &
+                \begin{tikzpicture}
+                    \node[fill=primarypurple!20, rounded corners=5pt, inner sep=10pt] {
+                        \begin{minipage}{4cm}
+                            \centering
+                            \textbf{\Large 68\% / 32\%}\\
+                            \small Ratio H/F
+                        \end{minipage}
+                    };
+                \end{tikzpicture}
+            \end{tabular}
+        \end{minipage}
+    };
+\end{tikzpicture}
+\end{center}
+
+% ============================================================
+%                      MÉTHODOLOGIE
+% ============================================================
+
+\chapter{Méthodologie}
+
+\section{Préparation des données}
+
+\begin{itemize}
+    \item Chargement du fichier Excel contenant les valeurs par région.
+    \item Suppression des lignes vides et normalisation des noms des régions.
+    \item Utilisation du fichier \textit{regions.json} (TopoJSON) pour obtenir les contours géographiques.
+    \item Fusion des données Excel avec les données géographiques.
+\end{itemize}
+
+\section{Conception de la carte interactive}
+
+La carte a été conçue grâce à \textbf{D3.js} et \textbf{TopoJSON}. Les éléments suivants ont été réalisés :
+
+\begin{itemize}
+    \item Projection Mercator adaptée aux frontières du Maroc.
+    \item Coloration uniforme des régions.
+    \item Ajout de \textbf{cercles proportionnels} représentant le total de retraités par région.
+    \item Ajout d’un \textbf{tooltip} affichant les informations détaillées.
+\end{itemize}
+
+\section{Histogramme interactif}
+
+Un histogramme dynamique a été mis en place afin de comparer les valeurs entre régions :
+
+\begin{itemize}
+    \item Génération des barres (\textit{Total / Féminin / Masculin}).
+    \item Transitions animées pour les tailles de barres.
+    \item Interaction synchronisée : clic ou survol dans l'histogramme \(\leftrightarrow\) surbrillance sur la carte.
+    \item Fonction \textit{sort by value} permettant de trier les régions.
+\end{itemize}
+
+\section{Graphique circulaire adaptatif}
+
+Un graphique circulaire de type \textbf{donut chart} a été intégré pour visualiser la répartition par genre :
+
+\begin{itemize}
+    \item Affichage dynamique selon la région sélectionnée.
+    \item Secteurs colorés : \textcolor{blue}{bleu} pour masculin, \textcolor{red}{rouge} pour féminin.
+    \item Pourcentages affichés directement sur les secteurs.
+    \item Total affiché au centre du graphique.
+    \item Légende interactive avec valeurs absolues.
+    \item Animation fluide lors du changement de région.
+\end{itemize}
+
+\section{Interaction entre les visualisations}
+
+L'ensemble des visualisations sont synchronisées pour offrir une expérience cohérente :
+
+\begin{itemize}
+    \item \textbf{Survol} d'une région : mise en évidence sur la carte, l'histogramme et le graphique circulaire.
+    \item \textbf{Clic} : sélection persistante avec highlight et mise à jour des graphiques détaillés.
+    \item \textbf{Transitions fluides} pour améliorer l'expérience utilisateur.
+    \item \textbf{Synchronisation bidirectionnelle} : carte $\leftrightarrow$ bar chart $\leftrightarrow$ donut chart.
+\end{itemize}
+
+\section{Organisation du code}
+
+Le projet est structuré comme suit :
+
+\begin{itemize}
+    \item \textbf{index.html} : structure de la page.
+    \item \textbf{index.js} : chargement de la carte.
+    \item \textbf{app.js} : logique principale, histogramme, interactions.
+    \item Importations : \texttt{D3.js}, \texttt{TopoJSON}.
+\end{itemize}
+
+% ============================================================
+%                 ARCHITECTURE DU PROJET
+% ============================================================
+
+\chapter{Architecture du projet}
+
+\section{Diagramme d'architecture}
+
+\begin{center}
+\begin{tikzpicture}[node distance=2cm, auto,
+    block/.style={rectangle, draw, fill=blue!20, text width=6em, text centered, rounded corners, minimum height=3em},
+    data/.style={rectangle, draw, fill=green!20, text width=6em, text centered, minimum height=3em},
+    output/.style={rectangle, draw, fill=orange!20, text width=6em, text centered, rounded corners, minimum height=3em},
+    arrow/.style={thick,->,>=stealth}]
+    
+    % Nodes
+    \node [data] (excel) {Fichier Excel\\(.xlsx)};
+    \node [data, right=of excel] (topojson) {TopoJSON\\(regions.json)};
+    \node [block, below=of excel, xshift=1.5cm] (convert) {Conversion\\JSON};
+    \node [block, below=of convert] (fusion) {Fusion\\données};
+    \node [output, below left=of fusion] (carte) {Carte\\interactive};
+    \node [output, below=of fusion] (barchart) {Bar Chart\\dynamique};
+    \node [output, below right=of fusion] (donut) {Donut\\Chart};
+    
+    % Arrows
+    \draw [arrow] (excel) -- (convert);
+    \draw [arrow] (topojson) -- (convert);
+    \draw [arrow] (convert) -- (fusion);
+    \draw [arrow] (fusion) -- (carte);
+    \draw [arrow] (fusion) -- (barchart);
+    \draw [arrow] (fusion) -- (donut);
+    
+    % Synchronization
+    \draw [arrow, dashed, blue] (carte) -- (barchart);
+    \draw [arrow, dashed, blue] (barchart) -- (donut);
+    \draw [arrow, dashed, blue] (donut) to[bend right=30] (carte);
+    
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+\noindent \textit{Les flèches bleues en pointillés représentent la synchronisation interactive entre les visualisations.}
+
+\section{Technologies utilisées}
+
+\begin{center}
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Technologie} & \textbf{Version} & \textbf{Utilisation} \\
+\hline
+D3.js & v7 & Bibliothèque de visualisation de données \\
+TopoJSON & v3 & Format de données géographiques optimisé \\
+JavaScript & ES6+ & Logique applicative et interactions \\
+HTML5 & - & Structure de la page web \\
+CSS3 & - & Styles, animations et responsive design \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Structure des fichiers}
+
+\begin{verbatim}
+datascience_projet/
+├── index.html          # Page principale
+├── app.js              # Logique D3.js et interactions
+├── styles.css          # Styles CSS
+├── data.json           # Données converties
+├── convert_excel.js    # Script de conversion
+└── repartition-retraites-par-region_2022.xlsx
+\end{verbatim}
+
+% ============================================================
+%                    RÉSULTATS OBTENUS
+% ============================================================
+
+\chapter{Résultats obtenus}
+
+\section{Visualisations réalisées}
+
+Le projet final comprend trois visualisations interconnectées :
+
+\subsection{Carte interactive du Maroc}
+\begin{itemize}
+    \item Affichage des 12 régions administratives.
+    \item Coloration dynamique au survol et à la sélection.
+    \item \textbf{Cercles proportionnels} superposés représentant le nombre total de retraités.
+    \item Tooltip affichant les détails : nom, total, masculin, féminin, pourcentage.
+\end{itemize}
+
+\subsection{Bar Chart interactif}
+\begin{itemize}
+    \item Trois barres comparatives : \textcolor{blue}{Masculin}, \textcolor{red}{Féminin}, \textcolor{green!50!black}{Total}.
+    \item S'adapte dynamiquement à la région sélectionnée.
+    \item Valeurs et pourcentages affichés au-dessus des barres.
+    \item Animations fluides lors des changements.
+\end{itemize}
+
+\subsection{Graphique circulaire (Donut Chart)}
+\begin{itemize}
+    \item Représentation visuelle de la répartition masculin/féminin.
+    \item Pourcentages directement sur les secteurs.
+    \item Total affiché au centre.
+    \item Légende avec valeurs absolues.
+\end{itemize}
+
+\subsection{Interactivité globale}
+\begin{itemize}
+    \item Synchronisation parfaite entre les trois visualisations.
+    \item Interface fluide et réactive.
+    \item Design responsive adapté à tous les écrans.
+    \item Animations D3.js pour une expérience utilisateur optimale.
+\end{itemize}
+
+\section{Captures d'écran et interprétations}
+
+\subsection{Vue d'ensemble de la carte}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/carte.png}\\
+
+\caption{Carte du Maroc avec cercles proportionnels}
+\end{figure}
+
+\textbf{Interprétation :} Cette capture montre la carte interactive du Maroc affichant les 12 régions administratives. Les \textbf{cercles proportionnels} superposés représentent visuellement le nombre de retraités par région. On observe immédiatement que \textbf{Rabat-Salé-Kénitra} et \textbf{Casablanca-Settat} possèdent les cercles les plus grands, traduisant leur forte concentration de retraités (respectivement 86\,331 et 72\,314). À l'inverse, les régions du sud comme \textbf{Dakhla-Oued Ed Dahab} présentent des cercles beaucoup plus petits (368 retraités).
+
+\subsection{Bar Chart détaillé}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/histogram.png}\\
+
+\caption{Bar chart affichant la répartition Masculin/Féminin/Total}
+\end{figure}
+
+\textbf{Interprétation :} Le bar chart s'adapte dynamiquement à la région sélectionnée. Les trois barres permettent de comparer rapidement :
+\begin{itemize}
+    \item La barre \textcolor{blue}{bleue} (Masculin) représente environ \textbf{63\%} des retraités en moyenne.
+    \item La barre \textcolor{red}{rouge} (Féminin) représente environ \textbf{37\%} des retraités.
+    \item La barre \textcolor{green!50!black}{verte} (Total) permet de visualiser l'effectif global.
+\end{itemize}
+Cette disparité reflète les tendances historiques du marché du travail formel au Maroc, où les hommes étaient traditionnellement plus représentés.
+
+\subsection{Graphique circulaire (Donut Chart)}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/cercle.png}\\
+
+\caption{Graphique circulaire montrant la répartition masculin/féminin}
+\end{figure}
+
+\textbf{Interprétation :} Le donut chart offre une visualisation intuitive des proportions. Au centre, le \textbf{nom de la région} et le \textbf{total de retraités} sont affichés. Les pourcentages directement sur les secteurs facilitent la lecture. On constate que la répartition est relativement constante entre les régions, avec une prédominance masculine d'environ \textbf{2/3 contre 1/3}. La région de \textbf{Rabat-Salé-Kénitra} présente une légère amélioration de la parité (37.2\% de femmes) par rapport à d'autres régions.
+
+% ============================================================
+%                     DISCUSSION / ANALYSE
+% ============================================================
+
+\chapter{Discussion et analyse}
+
+\section{Points forts du projet}
+
+\begin{itemize}
+    \item \textbf{Triple visualisation complémentaire} : La combinaison carte + bar chart + donut chart offre une vue complète des données sous différents angles.
+    \item \textbf{Interactivité riche} : Les interactions (clic, survol, synchronisation) permettent une exploration intuitive.
+    \item \textbf{Interprétation rapide} : Les cercles proportionnels permettent d'identifier immédiatement les régions à forte concentration.
+    \item \textbf{Design moderne et responsive} : L'interface s'adapte à tous les écrans.
+    \item \textbf{Animations fluides} : Les transitions D3.js améliorent l'expérience utilisateur.
+\end{itemize}
+
+\section{Observations clés des données}
+
+\begin{itemize}
+    \item \textbf{Concentration géographique} : Les régions de l'axe Casablanca-Rabat concentrent plus de \textbf{48\%} des retraités du pays.
+    \item \textbf{Disparité de genre} : En moyenne, les femmes représentent seulement \textbf{37\%} des retraités, reflétant les tendances historiques du marché du travail.
+    \item \textbf{Régions sous-représentées} : Les régions du Sud (Dakhla, Laayoune, Guelmim) comptent moins de \textbf{2\%} du total national.
+\end{itemize}
+
+\section{Limites identifiées}
+
+\begin{itemize}
+    \item \textbf{Données statiques} : Seule l'année 2022 est disponible, empêchant l'analyse des évolutions.
+    \item \textbf{Dépendance externe} : Le fichier TopoJSON est chargé depuis un CDN, nécessitant une connexion internet.
+    \item \textbf{Absence de normalisation} : Les données brutes ne tiennent pas compte de la population totale de chaque région.
+    \item \textbf{Granularité limitée} : Pas de détail au niveau provincial ou communal.
+\end{itemize}
+
+\section{Améliorations possibles}
+
+\begin{itemize}
+    \item \textbf{Slider temporel} : Permettre la comparaison entre plusieurs années pour visualiser l'évolution.
+    \item \textbf{Normalisation par population} : Afficher le taux de retraités pour 1000 habitants.
+    \item \textbf{Graphiques supplémentaires} : Treemap, stacked bars, line charts pour l'évolution temporelle.
+    \item \textbf{Export des données} : Fonctionnalité d'export en PDF, PNG ou CSV.
+    \item \textbf{Filtres avancés} : Filtrer par seuil, par genre, ou par tranche d'âge.
+    \item \textbf{Mode hors-ligne} : Intégrer les données géographiques localement.
+\end{itemize}
+
+% ============================================================
+%                       CONCLUSION
+% ============================================================
+
+\chapter{Conclusion}
+
+Ce projet démontre l'importance et la puissance des \textbf{visualisations interactives} pour explorer et comprendre des données socio-économiques régionales. L'utilisation combinée de trois visualisations complémentaires --- carte interactive, bar chart dynamique et graphique circulaire --- permet une analyse à la fois globale et détaillée.
+
+\textbf{Principaux apports du projet :}
+\begin{itemize}
+    \item Une interface web moderne, intuitive et responsive.
+    \item Trois visualisations parfaitement synchronisées.
+    \item Des animations fluides améliorant l'expérience utilisateur.
+    \item Un code source propre, modulaire et maintenable.
+    \item Une documentation complète facilitant la réutilisation.
+\end{itemize}
+
+\textbf{Perspectives futures :}
+\begin{itemize}
+    \item Intégration de données temporelles pour analyser les évolutions.
+    \item Ajout de nouvelles sources de données (chômage, PIB régional, etc.).
+    \item Déploiement en ligne pour un accès public.
+\end{itemize}
+
+\vspace{0.5cm}
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{\centering
+    \vspace{0.3cm}
+    \textbf{Code source disponible sur GitHub}\\[0.3cm]
+    \large\url{https://github.com/yassinsmaoui/datascience__projet}
+    \vspace{0.3cm}
+}}
+\end{center}
+
+% ============================================================
+%                     BIBLIOGRAPHIE
+% ============================================================
+
+\chapter{Bibliographie et Ressources}
+
+\section{Documentation technique}
+
+\begin{itemize}
+    \item \textbf{D3.js} -- Data-Driven Documents : \url{https://d3js.org}
+    \item \textbf{TopoJSON} -- Extension de GeoJSON : \url{https://github.com/topojson/topojson}
+    \item \textbf{Morocco Map} -- Données géographiques du Maroc : \url{https://cdn.jsdelivr.net/npm/morocco-map}
+\end{itemize}
+
+\section{Code source du projet}
+
+Le code source complet de ce projet est disponible sur GitHub :
+
+\begin{center}
+\fbox{\parbox{0.8\textwidth}{\centering
+    \vspace{0.3cm}
+    \textbf{Dépôt GitHub}\\[0.3cm]
+    \large\url{https://github.com/yassinsmaoui/datascience__projet}
+    \vspace{0.3cm}
+}}
+\end{center}
+
+\section{Outils de développement}
+
+\begin{itemize}
+    \item \textbf{Visual Studio Code} -- Éditeur de code
+    \item \textbf{Node.js} -- Environnement JavaScript
+    \item \textbf{Python HTTP Server} -- Serveur local de test
+    \item \textbf{Git} -- Gestion de versions
+\end{itemize}
+
+% ============================================================
+%                          ANNEXES
+% ============================================================
+
+\chapter{Annexes}
+
+\section{Extrait de code : Chargement de la carte}
+
+\begin{lstlisting}
+// Chargement des donnees geographiques et Excel
+async function init() {
+  const [geoData, excelData] = await Promise.all([
+    d3.json('https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json'),
+    d3.json('data.json')
+  ]);
+  
+  // Conversion TopoJSON en GeoJSON
+  const regions = topojson.feature(geoData, geoData.objects.regions);
+  
+  // Dessiner les visualisations
+  drawMap(regions, excelData);
+  drawBarChart(null);
+  updatePieChart(null);
+}
+\end{lstlisting}
+
+\section{Extrait de code : Graphique circulaire}
+
+\begin{lstlisting}
+// Creation du donut chart
+const pie = d3.pie().value(d => d.value);
+const arc = d3.arc()
+  .innerRadius(pieRadius * 0.6)
+  .outerRadius(pieRadius);
+
+// Dessin des secteurs avec animation
+arcs.append('path')
+  .attr('d', arc)
+  .attr('fill', d => d.data.color)
+  .transition()
+  .duration(800)
+  .attrTween('d', function(d) {
+    const interpolate = d3.interpolate(
+      { startAngle: 0, endAngle: 0 }, d
+    );
+    return t => arc(interpolate(t));
+  });
+\end{lstlisting}
+
+\section{Captures d'écran complètes}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/application complete.png}\\
+
+\caption{Interface principale avec carte, bar chart et donut chart}
+\end{figure}
+
+\textbf{Interprétation :} Cette vue d'ensemble montre l'interface complète avec les trois visualisations affichées simultanément. La carte occupe la partie gauche, tandis que le bar chart et le donut chart sont positionnés à droite. Cette disposition permet une comparaison instantanée entre la dimension géographique (carte) et les détails statistiques (graphiques).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/région sélectionnée avec détails.png}\\
+
+\caption{Visualisation détaillée lors de la sélection d'une région}
+\end{figure}
+
+\textbf{Interprétation :} Lorsqu'une région est sélectionnée (ici par exemple Casablanca-Settat), la région s'illumine sur la carte, le bar chart affiche les trois barres comparatives, et le donut chart montre la répartition par genre. Le tooltip affiche également les informations détaillées : nom de la région, total de retraités, répartition masculine et féminine avec pourcentages.
+
+\section{Lien vers le projet}
+
+\begin{center}
+\Large
+\textbf{Accéder au code source :}\\
+\vspace{0.5cm}
+\url{https://github.com/yassinsmaoui/datascience__projet}
+\end{center}
+
+\end{document}
+

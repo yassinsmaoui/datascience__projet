@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+
+# Environnement virtuel Python
+.venv/
+venv/
+env/
+
+# Fichiers de configuration IDE
+.vscode/
+.idea/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de log
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+
+# Fichiers de build
+dist/
+build/
+
+# Package lock (optionnel - décommenter si non nécessaire)
+# package-lock.json
